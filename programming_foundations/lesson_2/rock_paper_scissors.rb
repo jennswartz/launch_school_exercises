@@ -25,7 +25,17 @@ def display_results(player, computer)
 end
 
 def check_choices(choice)
-
+  if choice == 'r'
+    choice = 'rock'
+  elsif choice == 'p'
+    choice = 'paper'
+  elsif choice == 's'
+    choice = 'scissors'
+  elsif choice == 'l'
+    choice = 'lizard'
+  else
+    choice = 'spock'
+  end
 end
 
 player_win_counter = 0
@@ -35,7 +45,7 @@ prompt "Welcome to #{VALID_CHOICES.join(', ')}."
 prompt "It is you versus the computer."
 prompt "First player to score five wins."
 
-until (player_win_counter >= 5 || computer_win_counter >= 5) do
+until player_win_counter >= 5 || computer_win_counter >= 5
   choice = ''
 
   loop do
@@ -43,17 +53,7 @@ until (player_win_counter >= 5 || computer_win_counter >= 5) do
     prompt "Type first letter or sp for spock."
     choice = gets.chomp
 
-    if choice == 'r'
-      choice = 'rock'
-    elsif choice == 'p'
-      choice = 'paper'
-    elsif choice == 's'
-      choice = 'scissors'
-    elsif choice == 'l'
-      choice = 'lizard'
-    else
-      choice = 'spock'
-    end
+    choice = check_choices(choice)
 
     if VALID_CHOICES.include?(choice)
       break
@@ -80,9 +80,9 @@ end
 
 if player_win_counter > computer_win_counter
   prompt "Congratulations!"
-  prompt "You won #{player_win_counter} to #{computer_win_counter}"
+  prompt "You won #{player_win_counter} to #{computer_win_counter}."
 else
-  prompt "Sorry. You lost #{computer_win_counter} to #{player_win_counter}"
+  prompt "Sorry. You lost #{computer_win_counter} to #{player_win_counter}."
 end
 
 prompt "Thank you for playing.  Good-bye."
