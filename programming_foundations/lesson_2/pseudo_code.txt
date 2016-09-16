@@ -1,0 +1,31 @@
+Pseudo code for a method that returns the sum of two integers:
+START
+SET variable for integer_1
+SET variable for integer_2
+
+integer_1 + integer_2
+
+END
+
+
+
+Pseudo code for a method that takes an array of strings, and returns a string that is all those strings concatenated together:
+START
+SET variable for array
+SET iterator = 1
+SET variable for new_string
+WHILE iterator < index of array
+  SET new_string << value at each index of the array
+iterator += 1
+
+END
+
+
+Pseudo code for a method that takes an array of integers, and returns a new array with every other element:
+START
+SET variable for array
+SET variable for new_array
+iterator = 1
+WHILE iterator < index of array
+  SET new_array << value at even number indexes
+END
