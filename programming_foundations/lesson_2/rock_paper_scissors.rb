@@ -6,35 +6,35 @@ def prompt(message)
   puts "=> #{message}"
 end
 
-def win?(first, second)
-  (first == 'rock' && (second == 'scissors' || second == 'lizard')) ||
-    (first == 'paper' && (second == 'rock' || second == 'spock')) ||
-    (first == 'scissors' && (second == 'paper' || second == 'lizard')) ||
-    (first == 'lizard' && (second == 'paper' || second == 'spock')) ||
-    (first == 'spock' && (second == 'rock' || second == 'scissors'))
+win_hash = {
+  'rock' => %w(scissors lizard),
+  'paper' => %w(rock spock),
+  'scissors' => %w(paper lizard),
+  'lizard' => %w(paper spock),
+  'spock' => %w(rock scissors)
+}
+
+def win?(win_hash, first, second)
+  win_hash[first].include?(second)
 end
 
-def display_results(player, computer)
-  if win?(player, computer)
+def display_results(win_hash, player, computer)
+  if win?(win_hash, player, computer)
     prompt "You won!"
-  elsif win?(computer, player)
+  elsif win?(win_hash, computer, player)
     prompt "Computer won!"
   else
     prompt "It is a tie!"
   end
 end
 
-def check_choices(choice)
-  if choice == 'r'
-    choice = 'rock'
-  elsif choice == 'p'
-    choice = 'paper'
-  elsif choice == 's'
-    choice = 'scissors'
-  elsif choice == 'l'
-    choice = 'lizard'
-  else
-    choice = 'spock'
+def check_choices(word)
+  case word
+  when 'r' then 'rock'
+  when 'p' then 'paper'
+  when 's' then 'scissors'
+  when 'l' then 'lizard'
+  when 'sp' then 'spock'
   end
 end
 
@@ -42,7 +42,7 @@ player_win_counter = 0
 computer_win_counter = 0
 
 prompt "Welcome to #{VALID_CHOICES.join(', ')}."
-prompt "It is you versus the computer."
+prompt "It is You versus the Computer."
 prompt "First player to score five wins."
 
 until player_win_counter >= 5 || computer_win_counter >= 5
@@ -50,15 +50,16 @@ until player_win_counter >= 5 || computer_win_counter >= 5
 
   loop do
     prompt "Choose one: #{VALID_CHOICES.join(', ')}."
-    prompt "Type first letter or sp for spock."
+    prompt "Type the first letter or sp for spock."
     choice = gets.chomp
-
+    choice.downcase!
     choice = check_choices(choice)
 
     if VALID_CHOICES.include?(choice)
       break
     else
-      prompt 'That is not a valid choice.'
+      prompt "That is not a valid choice."
+      prompt "Type just the first letter or sp for spock"
     end
   end
 
@@ -66,11 +67,11 @@ until player_win_counter >= 5 || computer_win_counter >= 5
 
   puts "You chose: #{choice}; Computer chose: #{computer_choice}."
 
-  display_results(choice, computer_choice)
+  display_results(win_hash, choice, computer_choice)
 
-  if win?(choice, computer_choice)
+  if win?(win_hash, choice, computer_choice)
     player_win_counter += 1
-  elsif win?(computer_choice, choice)
+  elsif win?(win_hash, computer_choice, choice)
     computer_win_counter += 1
   end
 
