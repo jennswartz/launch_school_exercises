@@ -13,7 +13,7 @@ end
 
 # rubocop:disable Metrics/AbcSize
 def display_board(brd)
-  system 'clear'
+  # system 'clear'
   puts ""
   puts "You're a #{PLAYER_MARKER}. Computer is #{COMPUTER_MARKER}."
   puts "     |     |"
@@ -88,13 +88,16 @@ end
 
 computer_score = 0
 player_score = 0
+
+prompt "Welcome to Tic Tac Toe!"
+prompt "The first to score five wins the round!"
+
 loop do
   loop do
     board = initialize_board
 
     loop do
       display_board(board)
-      display_score(player_score, computer_score)
 
       player_places_piece!(board)
       break if someone_won?(board) || board_full?(board)
@@ -106,7 +109,7 @@ loop do
     display_board(board)
 
     if someone_won?(board)
-      prompt "#{detect_winner(board)} won!"
+      prompt "#{detect_winner(board)} won this round!"
     else
       prompt "It's a tie!"
     end
@@ -117,7 +120,12 @@ loop do
       computer_score += 1
     end
 
-    break if player_score == 5 || computer_score == 5
+    display_score(player_score, computer_score)
+
+    if player_score == 5 || computer_score == 5
+      prompt "Congratulations #{detect_winner(board)}! You scored five points!"
+      break
+    end
   end
 
   prompt "Play again? (y or n)"
