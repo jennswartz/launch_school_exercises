@@ -31,6 +31,10 @@ def display_board(brd)
 end
 # rubocop:enable Metrics/AbcSize
 
+def display_score(score1, score2)
+  puts "Player score: #{score1}. Computer score: #{score2}."
+end
+
 def initialize_board
   new_board = {}
   (1..9).each { |num| new_board[num] = INITIAL_MARKER }
@@ -85,33 +89,36 @@ end
 computer_score = 0
 player_score = 0
 loop do
-  board = initialize_board
-
   loop do
+    board = initialize_board
+
+    loop do
+      display_board(board)
+      display_score(player_score, computer_score)
+
+      player_places_piece!(board)
+      break if someone_won?(board) || board_full?(board)
+
+      computer_places_piece!(board)
+      break if someone_won?(board) || board_full?(board)
+    end
+
     display_board(board)
 
-    player_places_piece!(board)
-    break if someone_won?(board) || board_full?(board)
+    if someone_won?(board)
+      prompt "#{detect_winner(board)} won!"
+    else
+      prompt "It's a tie!"
+    end
 
-    computer_places_piece!(board)
-    break if someone_won?(board) || board_full?(board)
+    if detect_winner(board) == 'Player'
+      player_score += 1
+    elsif detect_winner(board) == 'Computer'
+      computer_score += 1
+    end
+
+    break if player_score == 5 || computer_score == 5
   end
-
-  display_board(board)
-
-  if someone_won?(board)
-    prompt "#{detect_winner(board)} won!"
-  else
-    prompt "It's a tie!"
-  end
-
-  if detect_winner(board) == 'Player'
-    player_score += 1
-  elsif detect_winner(board) == 'Computer'
-    computer_score += 1
-  end
-
-  puts "Player score: #{player_score}. Computer score: #{computer_score}."
 
   prompt "Play again? (y or n)"
   answer = gets.chomp
