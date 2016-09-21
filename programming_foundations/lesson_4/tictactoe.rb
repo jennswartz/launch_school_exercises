@@ -6,6 +6,7 @@ COMPUTER_MARKER = 'O'.freeze
 WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                 [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # columns
                 [[1, 5, 9], [3, 5, 7]].freeze       # diagonals
+PLAYER_WHO_GOES_FIRST = 'choose'
 
 def prompt(msg)
   puts "=> #{msg}"
@@ -73,13 +74,13 @@ end
 def computer_places_piece!(brd)
   square = nil
 
-  # offense first
+  # computer plays offensive play first
   WINNING_LINES.each do |line|
     square = find_at_risk_square(line, brd, COMPUTER_MARKER)
     break if square
   end
 
-  # defense
+  # computer plays defensive play next
   if !square
     WINNING_LINES.each do |line|
       square = find_at_risk_square(line, brd, PLAYER_MARKER)
@@ -87,10 +88,10 @@ def computer_places_piece!(brd)
     end
   end
 
-  # pick square 5 if it is empty
+  # computer will pick square 5 if it is empty
   square = 5 if !square && square_5_empty?(brd)
 
-  # otherwise pick a random square
+  # otherwise computer will pick a random square
   square = empty_squares(brd).sample if !square
 
   brd[square] = COMPUTER_MARKER
@@ -121,23 +122,43 @@ def find_at_risk_square(line, board, marker)
   end
 end
 
+
 computer_score = 0
 player_score = 0
 
 prompt "Welcome to Tic Tac Toe!"
 prompt "The first to score five wins the round!"
 
+if PLAYER_WHO_GOES_FIRST == 'choose'
+  prompt "Who do you want to go first? (player or computer)"
+  answer = gets.chomp
+  first_player = 'player' if answer.downcase.start_with?('p')
+end
+
 loop do
   loop do
     board = initialize_board
 
     loop do
-      display_board(board)
+      #  If constant is set at player or player is select, player goes first
+      if PLAYER_WHO_GOES_FIRST == 'player' || first_player == 'player'
+        display_board(board)
 
-      player_places_piece!(board)
-      break if someone_won?(board) || board_full?(board)
-      computer_places_piece!(board)
-      break if someone_won?(board) || board_full?(board)
+        player_places_piece!(board)
+        break if someone_won?(board) || board_full?(board)
+        computer_places_piece!(board)
+        break if someone_won?(board) || board_full?(board)
+
+      #  Otherwise, the computer plays first
+      else
+        computer_places_piece!(board)
+        break if someone_won?(board) || board_full?(board)
+
+        display_board(board)
+
+        player_places_piece!(board)
+        break if someone_won?(board) || board_full?(board)
+      end
     end
 
     display_board(board)
