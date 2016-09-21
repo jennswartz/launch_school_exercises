@@ -49,6 +49,10 @@ def player_squares(brd)
   brd.keys.select { |num| brd[num] == PLAYER_MARKER }
 end
 
+def square_5_empty?(brd)
+  brd[5] == INITIAL_MARKER
+end
+
 def joinor(arr, punctuation=', ', conjunction='or')
   arr[-1] = "#{conjunction} #{arr.last}" if arr.size > 1
   arr.size == 2 ? arr.join(' ') : arr.join(punctuation)
@@ -68,14 +72,26 @@ end
 
 def computer_places_piece!(brd)
   square = nil
+
+  # offense first
   WINNING_LINES.each do |line|
-    square = find_at_risk_square(line, brd)
+    square = find_at_risk_square(line, brd, COMPUTER_MARKER)
     break if square
   end
 
+  # defense
   if !square
-    square = empty_squares(brd).sample
+    WINNING_LINES.each do |line|
+      square = find_at_risk_square(line, brd, PLAYER_MARKER)
+      break if square
+    end
   end
+
+  # pick square 5 if it is empty
+  square = 5 if !square && square_5_empty?(brd)
+
+  # otherwise pick a random square
+  square = empty_squares(brd).sample if !square
 
   brd[square] = COMPUTER_MARKER
 end
@@ -99,11 +115,9 @@ def detect_winner(brd)
   nil
 end
 
-def find_at_risk_square(line, board)
-  if board.values_at(*line).count(PLAYER_MARKER) == 2
-    board.select { |k,v| line.include?(k) && v == INITIAL_MARKER}.keys.first
-  else
-    nil
+def find_at_risk_square(line, board, marker)
+  if board.values_at(*line).count(marker) == 2
+    board.select { |k, v| line.include?(k) && v == INITIAL_MARKER }.keys.first
   end
 end
 
@@ -122,7 +136,6 @@ loop do
 
       player_places_piece!(board)
       break if someone_won?(board) || board_full?(board)
-
       computer_places_piece!(board)
       break if someone_won?(board) || board_full?(board)
     end
