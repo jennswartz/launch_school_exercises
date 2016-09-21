@@ -45,6 +45,10 @@ def empty_squares(brd)
   brd.keys.select { |num| brd[num] == INITIAL_MARKER }
 end
 
+def player_squares(brd)
+  brd.keys.select { |num| brd[num] == PLAYER_MARKER }
+end
+
 def joinor(arr, punctuation=', ', conjunction='or')
   arr[-1] = "#{conjunction} #{arr.last}" if arr.size > 1
   arr.size == 2 ? arr.join(' ') : arr.join(punctuation)
@@ -63,7 +67,16 @@ def player_places_piece!(brd)
 end
 
 def computer_places_piece!(brd)
-  square = empty_squares(brd).sample
+  square = nil
+  WINNING_LINES.each do |line|
+    square = find_at_risk_square(line, brd)
+    break if square
+  end
+
+  if !square
+    square = empty_squares(brd).sample
+  end
+
   brd[square] = COMPUTER_MARKER
 end
 
@@ -84,6 +97,14 @@ def detect_winner(brd)
     end
   end
   nil
+end
+
+def find_at_risk_square(line, board)
+  if board.values_at(*line).count(PLAYER_MARKER) == 2
+    board.select { |k,v| line.include?(k) && v == INITIAL_MARKER}.keys.first
+  else
+    nil
+  end
 end
 
 computer_score = 0
