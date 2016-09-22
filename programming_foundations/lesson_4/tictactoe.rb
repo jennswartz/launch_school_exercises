@@ -7,6 +7,8 @@ WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                 [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # columns
                 [[1, 5, 9], [3, 5, 7]].freeze       # diagonals
 PLAYER_WHO_GOES_FIRST = 'choose'
+PLAYER = 'player'
+COMPUTER = 'computer'
 
 def prompt(msg)
   puts "=> #{msg}"
@@ -108,9 +110,9 @@ end
 def detect_winner(brd)
   WINNING_LINES.each do |line|
     if brd.values_at(*line).count(PLAYER_MARKER) == 3
-      return 'Player'
+      return PLAYER
     elsif brd.values_at(*line).count(COMPUTER_MARKER) == 3
-      return 'Computer'
+      return COMPUTER
     end
   end
   nil
@@ -122,43 +124,64 @@ def find_at_risk_square(line, board, marker)
   end
 end
 
+def place_piece!(brd, player)
+  if player == PLAYER
+    player_places_piece!(brd)
+  elsif player == COMPUTER
+    computer_places_piece!(brd)
+  end
+end
+
+def alternate_player(player)
+  if player == COMPUTER
+    return PLAYER
+  elsif player == PLAYER
+    return COMPUTER
+  end
+end
 
 computer_score = 0
 player_score = 0
+first_player = nil
+
 
 prompt "Welcome to Tic Tac Toe!"
 prompt "The first to score five wins the round!"
 
-if PLAYER_WHO_GOES_FIRST == 'choose'
-  prompt "Who do you want to go first? (player or computer)"
-  answer = gets.chomp
-  first_player = 'player' if answer.downcase.start_with?('p')
+loop do
+  if PLAYER_WHO_GOES_FIRST == 'choose'
+    prompt "Who do you want to go first? (player or computer)"
+    answer = gets.chomp
+    if answer.downcase.start_with?('p')
+      first_player = PLAYER
+      break
+    elsif answer.downcase.start_with?('c')
+      first_player = COMPUTER
+      break
+    else
+      prompt "That was not a valid entry. Please retry."
+    end
+  end
 end
 
 loop do
   loop do
     board = initialize_board
 
+    #  If set at player goes first or player is select, player goes first
+    if PLAYER_WHO_GOES_FIRST == PLAYER || first_player == PLAYER
+      current_player = PLAYER
+    elsif
+      current_player = COMPUTER
+    end
+
+    display_board(board)
+
     loop do
-      #  If constant is set at player or player is select, player goes first
-      if PLAYER_WHO_GOES_FIRST == 'player' || first_player == 'player'
-        display_board(board)
-
-        player_places_piece!(board)
-        break if someone_won?(board) || board_full?(board)
-        computer_places_piece!(board)
-        break if someone_won?(board) || board_full?(board)
-
-      #  Otherwise, the computer plays first
-      else
-        computer_places_piece!(board)
-        break if someone_won?(board) || board_full?(board)
-
-        display_board(board)
-
-        player_places_piece!(board)
-        break if someone_won?(board) || board_full?(board)
-      end
+      place_piece!(board, current_player)
+      display_board(board)
+      current_player = alternate_player(current_player)
+      break if someone_won?(board) || board_full?(board)
     end
 
     display_board(board)
@@ -169,16 +192,16 @@ loop do
       prompt "It's a tie!"
     end
 
-    if detect_winner(board) == 'Player'
+    if detect_winner(board) == PLAYER
       player_score += 1
-    elsif detect_winner(board) == 'Computer'
+    elsif detect_winner(board) == COMPUTER
       computer_score += 1
     end
 
     display_score(player_score, computer_score)
 
     if player_score == 5 || computer_score == 5
-      prompt "Congratulations #{detect_winner(board)}! You scored five points!"
+      prompt "#{detect_winner(board)} scored five points and wins the round!"
       break
     end
   end
