@@ -33,6 +33,10 @@ def display_board(brd)
 end
 # rubocop:enable Metrics/AbcSize
 
+def clear_screen
+  system 'clear'
+end
+
 def display_score(score1, score2)
   puts "Player score: #{score1}. Computer score: #{score2}."
 end
@@ -194,6 +198,7 @@ loop do
 
     loop do
       place_piece!(board, current_player)
+      clear_screen
       display_board(board)
       current_player = alternate_player(current_player)
       break if someone_won?(board) || board_full?(board)
