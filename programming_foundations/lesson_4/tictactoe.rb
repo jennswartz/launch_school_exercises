@@ -161,6 +161,10 @@ def choose_who_plays_first(player)
   player
 end
 
+def five_wins?(score1, score2)
+  score1 == 5 || score2 == 5
+end
+
 computer_score = 0
 player_score = 0
 current_player = nil
@@ -168,11 +172,12 @@ current_player = nil
 prompt "Welcome to Tic Tac Toe!"
 prompt "The first to score five wins!"
 
-if PLAYER_WHO_GOES_FIRST == 'choose'
+case PLAYER_WHO_GOES_FIRST
+when 'choose'
   current_player = choose_who_plays_first(current_player)
-elsif PLAYER_WHO_GOES_FIRST == 'player'
+when 'player'
   current_player = PLAYER
-else
+when 'computer'
   current_player = COMPUTER
 end
 
@@ -203,7 +208,7 @@ loop do
       prompt "It's a tie!"
     end
 
-    if player_score == 5 || computer_score == 5
+    if five_wins?(player_score, computer_score)
       prompt "#{detect_winner(board)} scored five points and wins!"
       player_score = 0
       computer_score = 0
