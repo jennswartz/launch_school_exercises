@@ -6,7 +6,7 @@ COMPUTER_MARKER = 'O'.freeze
 WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                 [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # columns
                 [[1, 5, 9], [3, 5, 7]].freeze       # diagonals
-PLAYER_WHO_GOES_FIRST = 'choose'.freeze
+PLAYER_WHO_GOES_FIRST = 'choose'.freeze # use 'choose', 'computer', or 'player'
 PLAYER = 'Player'.freeze
 COMPUTER = 'Computer'.freeze
 
@@ -55,9 +55,9 @@ def center_square_empty?(brd)
   brd[5] == INITIAL_MARKER
 end
 
-def joinor(arr, punctuation=', ', conjunction='or')
+def joinor(arr, delimiter=', ', conjunction='or')
   arr[-1] = "#{conjunction} #{arr.last}" if arr.size > 1
-  arr.size == 2 ? arr.join(' ') : arr.join(punctuation)
+  arr.size == 2 ? arr.join(' ') : arr.join(delimiter)
 end
 
 def player_places_piece!(brd)
@@ -66,7 +66,7 @@ def player_places_piece!(brd)
     prompt "Choose a square (#{joinor(empty_squares(brd))}):"
     square = gets.chomp.to_i
     break if empty_squares(brd).include?(square)
-    prompt "Sorry, that's not a valid choice."
+    prompt "Sorry. That's not a valid choice."
   end
 
   brd[square] = PLAYER_MARKER
@@ -94,13 +94,13 @@ def computer_places_piece!(brd)
   # try to find offensive play first
   square = find_offensive_play(brd)
 
-  # computer plays defensive play next
+  # try to find defensive play next
   square = find_defensive_play(brd) if !square
 
-  # computer will pick the center square if it is empty
+  # pick the center square if it is empty
   square = 5 if !square && center_square_empty?(brd)
 
-  # otherwise computer will pick a random square
+  # otherwise pick a random square
   square = empty_squares(brd).sample if !square
 
   brd[square] = COMPUTER_MARKER
@@ -146,7 +146,8 @@ end
 
 def choose_who_plays_first(player)
   loop do
-    prompt "Who do you want to go first? (player or computer)"
+    prompt "Who do you want to go first?"
+    prompt "Enter C for #{COMPUTER} or P for #{PLAYER}."
     answer = gets.chomp
     if answer.downcase.start_with?('p')
       player = PLAYER
