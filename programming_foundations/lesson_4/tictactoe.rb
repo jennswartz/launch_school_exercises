@@ -34,7 +34,7 @@ end
 # rubocop:enable Metrics/AbcSize
 
 def clear_screen
-  system 'clear'
+  system('clear') || system('cls')
 end
 
 def display_score(score1, score2)
@@ -100,18 +100,10 @@ def find_defensive_play(brd)
 end
 
 def computer_places_piece!(brd)
-  # try to find offensive play first
   square = find_offensive_play(brd)
-
-  # try to find defensive play next
   square = find_defensive_play(brd) if !square
-
-  # pick the center square if it is empty
   square = 5 if !square && center_square_empty?(brd)
-
-  # otherwise pick a random square
   square = empty_squares(brd).sample if !square
-
   brd[square] = COMPUTER_MARKER
 end
 
@@ -147,9 +139,9 @@ end
 
 def alternate_player(player)
   if player == COMPUTER
-    return PLAYER
+    PLAYER
   elsif player == PLAYER
-    return COMPUTER
+    COMPUTER
   end
 end
 
@@ -158,15 +150,9 @@ def choose_who_plays_first(player)
     prompt "Who do you want to go first?"
     prompt "Enter C for #{COMPUTER} or P for #{PLAYER}."
     answer = gets.chomp
-    if answer.downcase.start_with?('p')
-      player = PLAYER
-      break
-    elsif answer.downcase.start_with?('c')
-      player = COMPUTER
-      break
-    else
-      prompt "That was not a valid entry. Please retry."
-    end
+    return PLAYER if answer.downcase.start_with?('p')
+    return COMPUTER if answer.downcase.start_with?('c')
+    prompt "That was not a valid entry. Please retry."
   end
   player
 end
@@ -217,12 +203,11 @@ loop do
       prompt "It's a tie!"
     end
 
-    if five_wins?(player_score, computer_score)
-      prompt "#{detect_winner(board)} scored five points and wins!"
-      player_score = 0
-      computer_score = 0
-      break
-    end
+    next unless five_wins?(player_score, computer_score)
+    prompt "#{detect_winner(board)} scored five points and wins!"
+    player_score = 0
+    computer_score = 0
+    break
   end
 
   prompt "Play again? (y or n)"
