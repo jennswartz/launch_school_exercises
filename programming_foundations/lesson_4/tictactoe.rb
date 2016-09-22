@@ -37,6 +37,11 @@ def display_score(score1, score2)
   puts "Player score: #{score1}. Computer score: #{score2}."
 end
 
+def display_all(brd, score1, score2)
+  display_board(brd)
+  display_score(score1, score2)
+end
+
 def initialize_board
   new_board = {}
   (1..9).each { |num| new_board[num] = INITIAL_MARKER }
@@ -185,7 +190,7 @@ end
 loop do
   loop do
     board = initialize_board
-    display_board(board)
+    display_all(board, player_score, computer_score)
 
     loop do
       place_piece!(board, current_player)
