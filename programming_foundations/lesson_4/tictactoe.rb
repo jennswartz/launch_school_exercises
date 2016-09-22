@@ -16,7 +16,6 @@ end
 
 # rubocop:disable Metrics/AbcSize
 def display_board(brd)
-#  system 'clear'
   puts ""
   puts "You're a #{PLAYER_MARKER}. Computer is #{COMPUTER_MARKER}."
   puts "     |     |"
@@ -52,7 +51,7 @@ def player_squares(brd)
   brd.keys.select { |num| brd[num] == PLAYER_MARKER }
 end
 
-def square_5_empty?(brd)
+def center_square_empty?(brd)
   brd[5] == INITIAL_MARKER
 end
 
@@ -73,25 +72,33 @@ def player_places_piece!(brd)
   brd[square] = PLAYER_MARKER
 end
 
-def computer_places_piece!(brd)
+def find_offensive_play(brd)
   square = nil
-
-  # computer plays offensive play first
   WINNING_LINES.each do |line|
     square = find_at_risk_square(line, brd, COMPUTER_MARKER)
     break if square
   end
+  square
+end
+
+def find_defensive_play(brd)
+  square = nil
+  WINNING_LINES.each do |line|
+    square = find_at_risk_square(line, brd, PLAYER_MARKER)
+    break if square
+  end
+  square
+end
+
+def computer_places_piece!(brd)
+  # try to find offensive play first
+  square = find_offensive_play(brd)
 
   # computer plays defensive play next
-  if !square
-    WINNING_LINES.each do |line|
-      square = find_at_risk_square(line, brd, PLAYER_MARKER)
-      break if square
-    end
-  end
+  square = find_defensive_play(brd) if !square
 
-  # computer will pick square 5 if it is empty
-  square = 5 if !square && square_5_empty?(brd)
+  # computer will pick the center square if it is empty
+  square = 5 if !square && center_square_empty?(brd)
 
   # otherwise computer will pick a random square
   square = empty_squares(brd).sample if !square
@@ -125,11 +132,8 @@ def find_at_risk_square(line, board, marker)
 end
 
 def place_piece!(brd, player)
-  if player == PLAYER
-    player_places_piece!(brd)
-  elsif player == COMPUTER
-    computer_places_piece!(brd)
-  end
+  player_places_piece!(brd) if player == PLAYER
+  computer_places_piece!(brd) if player == COMPUTER
 end
 
 def alternate_player(player)
@@ -140,42 +144,42 @@ def alternate_player(player)
   end
 end
 
-computer_score = 0
-player_score = 0
-first_player = nil
-
-prompt "Welcome to Tic Tac Toe!"
-prompt "The first to score five wins!"
-
-loop do
-  if PLAYER_WHO_GOES_FIRST == 'choose'
+def choose_who_plays_first(player)
+  loop do
     prompt "Who do you want to go first? (player or computer)"
     answer = gets.chomp
     if answer.downcase.start_with?('p')
-      first_player = PLAYER
+      player = PLAYER
       break
     elsif answer.downcase.start_with?('c')
-      first_player = COMPUTER
+      player = COMPUTER
       break
     else
       prompt "That was not a valid entry. Please retry."
     end
   end
+  player
+end
+
+computer_score = 0
+player_score = 0
+current_player = nil
+
+prompt "Welcome to Tic Tac Toe!"
+prompt "The first to score five wins!"
+
+if PLAYER_WHO_GOES_FIRST == 'choose'
+  current_player = choose_who_plays_first(current_player)
+elsif PLAYER_WHO_GOES_FIRST == 'player'
+  current_player = PLAYER
+else
+  current_player = COMPUTER
 end
 
 loop do
   loop do
     board = initialize_board
-
-    #  If PLAYER_WHO_GOES_FIRST is player, set current_player variable to PLAYER
-    #  and display board
-    if PLAYER_WHO_GOES_FIRST == PLAYER || first_player == PLAYER
-      current_player = PLAYER
-      display_board(board)
-
-    #  Otherwise set current_player variable to computer
-    elsif current_player = COMPUTER
-    end
+    display_board(board)
 
     loop do
       place_piece!(board, current_player)
@@ -201,6 +205,8 @@ loop do
 
     if player_score == 5 || computer_score == 5
       prompt "#{detect_winner(board)} scored five points and wins!"
+      player_score = 0
+      computer_score = 0
       break
     end
   end
@@ -208,6 +214,7 @@ loop do
   prompt "Play again? (y or n)"
   answer = gets.chomp
   break unless answer.downcase.start_with?('y')
+  current_player = choose_who_plays_first(current_player)
 end
 
 prompt "Thanks for playing Tic Tac Toe! Good-bye."
