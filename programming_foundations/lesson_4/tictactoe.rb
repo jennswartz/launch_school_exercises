@@ -38,7 +38,7 @@ def clear_screen
 end
 
 def display_score(score1, score2)
-  puts "Player score: #{score1}. Computer score: #{score2}."
+  puts "#{PLAYER} score: #{score1}. #{COMPUTER} score: #{score2}."
 end
 
 def display_all(brd, score1, score2)
@@ -203,8 +203,6 @@ loop do
       current_player = alternate_player(current_player)
       break if someone_won?(board) || board_full?(board)
     end
-
-    display_board(board)
 
     if detect_winner(board) == PLAYER
       player_score += 1
