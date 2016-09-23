@@ -1,6 +1,6 @@
-def repeat(words, num)
+def repeat(word, num)
   num.times do
-    puts words
+    puts word
   end
 end
 
