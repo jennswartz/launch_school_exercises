@@ -1,15 +1,5 @@
 require 'pry'
 
-# 1. Initialize deck
-# 2. Deal cards to player and dealer
-# 3. Player turn: hit or stay
-#   - repeat until bust or "stay"
-# 4. If player bust, dealer wins.
-# 5. Dealer turn: hit or stay
-#   - repeat until total >= 17
-# 6. If dealer bust, player wins.
-# 7. Compare cards and declare winner.
-
 SUITS = %w(Clubs Diamonds Hearts Spades).freeze
 RANK = %w(2 3 4 5 6 7 8 9 10 Jack Queen King Ace).freeze
 ACE = 'Ace'.freeze
@@ -85,7 +75,7 @@ def display_initial_hands(player, dealer)
 end
 
 def display_hand(player)
-  player.each do |key, value|
+  player.each do |key, _|
     prompt "  #{key[:rank]} of #{key[:suit]}"
   end
 end
@@ -101,23 +91,16 @@ def take_turn(deck_of_cards, hand_of_cards)
 end
 
 def detect_winner(player, dealer)
-  if total(player) > GAME_MAX
+  if total(player) > GAME_MAX || total(dealer) > total(player)
     return DEALER
-  elsif total(dealer) > GAME_MAX
+  elsif total(dealer) > GAME_MAX || total(player) > total(dealer)
     return PLAYER
-  elsif total(player) > total(dealer)
-    return PLAYER
-  elsif total(dealer) > total(player)
-    return DEALER
-  else
-    nil
   end
 end
 
 def someone_won?(player, dealer)
   !!detect_winner(player, dealer)
 end
-
 
 deck = []
 players_hand = []
@@ -152,7 +135,9 @@ else
   display_hand(dealers_hand)
 
   loop do
-    break if total(dealers_hand) >= HIT_OR_STAY_BREAK || busted?(total(dealers_hand))
+    if total(dealers_hand) >= HIT_OR_STAY_BREAK || busted?(total(dealers_hand))
+      break
+    end
     prompt "Dealer decides to hit."
     take_turn(deck, dealers_hand)
   end
