@@ -12,7 +12,7 @@ TEN = 10
 ELEVEN = 11
 ONE = 1
 GAME_MAX = 21
-HIT_OR_STAY_BREAK = 17
+HIT_STAY_BREAK = 17
 
 def prompt(msg)
   puts "=> #{msg}"
@@ -85,7 +85,7 @@ def display_hand(player)
 end
 
 def busted?(score)
-  score > GAME_MAX
+  total(score) > GAME_MAX
 end
 
 def take_turn(deck_of_cards, hand_of_cards)
@@ -98,7 +98,7 @@ def detect_winner(player, dealer)
   if total(player) > GAME_MAX || total(dealer) > total(player)
     return DEALER
   elsif total(dealer) > GAME_MAX || total(player) > total(dealer)
-    return PLAYER
+    return 'You'
   end
 end
 
@@ -134,37 +134,38 @@ loop do
     answer = gets.chomp
     break if answer.downcase.start_with?('s')
     take_turn(deck, players_hand)
-    break if busted?(total(players_hand))
+    break if busted?(players_hand)
   end
 
-  if busted?(total(players_hand))
+  player_total = total(players_hand)
+  if busted?(players_hand)
     prompt "Sorry. You busted. #{DEALER} wins!"
-    prompt "Your total is #{total(players_hand)}."
+    prompt "Your total is #{player_total}."
     play_again? ? next : break
   else
-    prompt "You decided to stay!"
-    prompt "Your total is #{total(players_hand)}."
+    prompt "You decided to stay at #{player_total}!"
     prompt "It is now #{DEALER}'s turn."
     prompt "#{DEALER}'s cards are:"
     display_hand(dealers_hand)
 
     loop do
-      if total(dealers_hand) >= HIT_OR_STAY_BREAK || busted?(total(dealers_hand))
+      if total(dealers_hand) >= HIT_STAY_BREAK || busted?(dealers_hand)
         break
       end
       prompt "#{DEALER} hits!"
       take_turn(deck, dealers_hand)
     end
 
-    if busted?(total(dealers_hand))
+    dealer_total = total(dealers_hand)
+    if busted?(dealers_hand)
       prompt "#{DEALER} busted!"
-      prompt "#{DEALER}'s total is #{total(dealers_hand)}."
-      prompt "#{PLAYER} wins!"
+      prompt "#{DEALER}'s total is #{dealer_total}."
+      prompt "You win!"
       play_again? ? next : break
-    elsif total(dealers_hand) >= HIT_OR_STAY_BREAK
-      prompt "#{DEALER} stays!"
+    elsif total(dealers_hand) >= HIT_STAY_BREAK
+      prompt "#{DEALER} stays at #{dealer_total}!"
       prompt "Time to decide a winner!"
-      prompt "#{DEALER} has #{total(dealers_hand)}."
+      prompt "#{DEALER} has #{dealer_total}."
       prompt "You have #{total(players_hand)}."
       detect_winner(players_hand, dealers_hand)
       if someone_won?(players_hand, dealers_hand)
