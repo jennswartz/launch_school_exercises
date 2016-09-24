@@ -103,11 +103,21 @@ end
 def detect_winner(player, dealer)
   if total(player) > GAME_MAX
     return DEALER
-    binding.pry
   elsif total(dealer) > GAME_MAX
     return PLAYER
+  elsif total(player) > total(dealer)
+    return PLAYER
+  elsif total(dealer) > total(player)
+    return DEALER
+  else
+    nil
   end
 end
+
+def someone_won?(player, dealer)
+  !!detect_winner(player, dealer)
+end
+
 
 deck = []
 players_hand = []
@@ -140,30 +150,27 @@ else
   prompt "It is now Dealer's turn."
   prompt "Dealer's cards are:"
   display_hand(dealers_hand)
+
+  loop do
+    break if total(dealers_hand) >= HIT_OR_STAY_BREAK || busted?(total(dealers_hand))
+    prompt "Dealer decides to hit."
+    take_turn(deck, dealers_hand)
+  end
+
+  if busted?(total(dealers_hand))
+    prompt "Dealer busted.  Dealer's total is #{total(dealers_hand)}."
+    prompt "You win!"
+    # Add prompt to restart game
+  elsif total(dealers_hand) >= HIT_OR_STAY_BREAK
+    prompt "Dealer decided to stay."
+    prompt "Time to decide a winner!"
+    prompt "Player has #{total(players_hand)}."
+    prompt "Dealer has #{total(dealers_hand)}."
+    detect_winner(players_hand, dealers_hand)
+    if someone_won?(players_hand, dealers_hand)
+      prompt "#{detect_winner(players_hand, dealers_hand)} won this round!"
+    else
+      prompt "It's a tie!"
+    end
+  end
 end
-
-loop do
-  break if total(dealers_hand) >= HIT_OR_STAY_BREAK || busted?(total(dealers_hand))
-  prompt "Dealer decides to hit."
-  take_turn(deck, dealers_hand)
-end
-
-if busted?(total(dealers_hand))
-  prompt "Dealer busted.  Dealer's total is #{total(dealers_hand)}."
-  prompt "You win!"
-  # Add prompt to restart game
-end
-
-if total(dealers_hand) >= HIT_OR_STAY_BREAK
-  prompt "Dealer decided to stay."
-  prompt "Time to decide a winner!"
-  prompt "Player has #{total(players_hand)}."
-  prompt "Dealer has #{total(dealers_hand)}."
-  detect_winner(players_hand, dealers_hand)
-  prompt "The winner is: #{detect_winner(players_hand, dealers_hand)}!"
-end
-
-
-
-# p players_hand
-# puts total(players_hand)
