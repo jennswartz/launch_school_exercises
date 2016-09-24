@@ -18,6 +18,10 @@ def prompt(msg)
   puts "=> #{msg}"
 end
 
+def clear_screen
+  system('clear') || system('cls')
+end
+
 def initialize_full_deck(cards)
   SUITS.each do |suit|
     RANK.each do |rank|
@@ -68,7 +72,7 @@ def deal_card(deck_of_cards, hand_of_cards)
 end
 
 def display_initial_hands(player, dealer)
-  prompt "#{PLAYER} has a #{player[0][:rank]} of #{player[0][:suit]} and " \
+  prompt "You have a #{player[0][:rank]} of #{player[0][:suit]} and " \
          "#{player[1][:rank]} of #{player[1][:suit]}."
   prompt "#{DEALER} has #{dealer[0][:rank]} of #{dealer[0][:suit]} and " \
          "an unknown card."
@@ -102,60 +106,75 @@ def someone_won?(player, dealer)
   !!detect_winner(player, dealer)
 end
 
-deck = []
-players_hand = []
-dealers_hand = []
-
-initialize_full_deck(deck)
-
-2.times do
-  deal_card(deck, players_hand)
-  deal_card(deck, dealers_hand)
-end
-
-display_initial_hands(players_hand, dealers_hand)
-
-answer = nil
-loop do
-  prompt "Do you want to hit (h) or stay (s)?"
+def play_again?
+  puts "-------------------"
+  prompt "Do you want to play again? (y or n)"
   answer = gets.chomp
-  break if answer.downcase.start_with?('s')
-  take_turn(deck, players_hand)
-  break if busted?(total(players_hand))
+  clear_screen
+  answer.downcase.start_with?('y')
 end
 
-if busted?(total(players_hand))
-  prompt "Sorry. You busted. Your total is #{total(players_hand)}."
-  prompt "Dealer wins!"
-  # add prompt to restart game
-else
-  prompt "You decided to stay!"
-  prompt "It is now Dealer's turn."
-  prompt "Dealer's cards are:"
-  display_hand(dealers_hand)
+loop do
+  deck = []
+  players_hand = []
+  dealers_hand = []
 
+  initialize_full_deck(deck)
+
+  2.times do
+    deal_card(deck, players_hand)
+    deal_card(deck, dealers_hand)
+  end
+
+  display_initial_hands(players_hand, dealers_hand)
+
+  answer = nil
   loop do
-    if total(dealers_hand) >= HIT_OR_STAY_BREAK || busted?(total(dealers_hand))
-      break
-    end
-    prompt "Dealer decides to hit."
-    take_turn(deck, dealers_hand)
+    prompt "Do you want to hit (h) or stay (s)?"
+    answer = gets.chomp
+    break if answer.downcase.start_with?('s')
+    take_turn(deck, players_hand)
+    break if busted?(total(players_hand))
   end
 
-  if busted?(total(dealers_hand))
-    prompt "Dealer busted.  Dealer's total is #{total(dealers_hand)}."
-    prompt "You win!"
-    # Add prompt to restart game
-  elsif total(dealers_hand) >= HIT_OR_STAY_BREAK
-    prompt "Dealer decided to stay."
-    prompt "Time to decide a winner!"
-    prompt "Player has #{total(players_hand)}."
-    prompt "Dealer has #{total(dealers_hand)}."
-    detect_winner(players_hand, dealers_hand)
-    if someone_won?(players_hand, dealers_hand)
-      prompt "#{detect_winner(players_hand, dealers_hand)} won this round!"
-    else
-      prompt "It's a tie!"
+  if busted?(total(players_hand))
+    prompt "Sorry. You busted. #{DEALER} wins!"
+    prompt "Your total is #{total(players_hand)}."
+    play_again? ? next : break
+  else
+    prompt "You decided to stay!"
+    prompt "Your total is #{total(players_hand)}."
+    prompt "It is now #{DEALER}'s turn."
+    prompt "#{DEALER}'s cards are:"
+    display_hand(dealers_hand)
+
+    loop do
+      if total(dealers_hand) >= HIT_OR_STAY_BREAK || busted?(total(dealers_hand))
+        break
+      end
+      prompt "#{DEALER} hits!"
+      take_turn(deck, dealers_hand)
+    end
+
+    if busted?(total(dealers_hand))
+      prompt "#{DEALER} busted!"
+      prompt "#{DEALER}'s total is #{total(dealers_hand)}."
+      prompt "#{PLAYER} wins!"
+      play_again? ? next : break
+    elsif total(dealers_hand) >= HIT_OR_STAY_BREAK
+      prompt "#{DEALER} stays!"
+      prompt "Time to decide a winner!"
+      prompt "#{DEALER} has #{total(dealers_hand)}."
+      prompt "You have #{total(players_hand)}."
+      detect_winner(players_hand, dealers_hand)
+      if someone_won?(players_hand, dealers_hand)
+        prompt "#{detect_winner(players_hand, dealers_hand)} won this round!"
+      else
+        prompt "It's a tie!"
+      end
     end
   end
+  break unless play_again?
 end
+
+prompt "Thank you for playing Twenty-One! Good-bye."
