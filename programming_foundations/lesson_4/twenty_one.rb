@@ -19,7 +19,7 @@ KING = 'King'.freeze
 TEN = 10
 ELEVEN = 11
 ONE = 1
-TWENTY_ONE = 21
+GAME_MAX = 21
 
 def prompt(msg)
   puts "=> #{msg}"
@@ -60,7 +60,7 @@ def total(hand_of_cards)
   aces_high = hand_of_cards.map { |card| card[:high_value] }
   sum = aces_high.inject { |add, card| add + card }
 
-  if sum > TWENTY_ONE
+  if sum > GAME_MAX
     aces_low = hand_of_cards.map { |card| card[:low_value] }
     sum = aces_low.inject { |add, card| add + card }
   end
@@ -81,32 +81,16 @@ def display_initial_hands(player, dealer)
          "an unknown card."
 end
 
-players_hand
-  answer = nil
-  loop do
-    prompt "Do you want to hit or stay?"
-    answer = gets.chomp
-    break if answer.downcase.start_with?('s')  || busted?(total(players_hand))
-    deal_card(deck, players_hand)
-  end
-
-
-
-def busted?(score)
-  if score > TWENTY_ONE
-    prompt "You busted!"
-    # play again?
+def display_players_hand(player)
+  prompt "You have: "
+  player.each do |key, value|
+    prompt "#{key[:rank]} of #{key[:suit]}"
   end
 end
 
-
-    # prompt "You have a #{player[0][:rank]} of #{player[0][:suit]} and " \
-    #      "#{player[1][:rank]} of #{player[1][:suit]}."
-    # prompt "Dealer has #{dealer[0][:rank]} of #{dealer[0][:suit]} and " \
-    #      "#{dealer[1][:rank]} and #{dealer[1][:suit]}."
-
-    # prompt "Play again
-
+def busted?(score)
+  score > GAME_MAX
+end
 
 deck = []
 players_hand = []
@@ -125,12 +109,17 @@ answer = nil
 loop do
   prompt "Do you want to hit or stay?"
   answer = gets.chomp
-  break if answer.downcase.start_with?('s')  || busted?(total(players_hand))
+  break if %w(s stay).include?(answer)
   deal_card(deck, players_hand)
+  display_players_hand(players_hand)
+  break if busted?(total(players_hand))
+end
+
+if busted?(total(players_hand))
+  prompt "You busted - your total is #{total(players_hand)}."
 end
 
 
-busted?(total(players_hand))
 
-p players_hand
-puts total(players_hand)
+# p players_hand
+# puts total(players_hand)
