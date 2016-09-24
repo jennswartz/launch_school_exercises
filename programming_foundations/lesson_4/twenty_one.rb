@@ -16,10 +16,13 @@ ACE = 'Ace'.freeze
 JACK = 'Jack'.freeze
 QUEEN = 'Queen'.freeze
 KING = 'King'.freeze
+PLAYER = 'Player'.freeze
+DEALER = 'Dealer'.freeze
 TEN = 10
 ELEVEN = 11
 ONE = 1
 GAME_MAX = 21
+HIT_OR_STAY_BREAK = 17
 
 def prompt(msg)
   puts "=> #{msg}"
@@ -28,13 +31,13 @@ end
 def initialize_full_deck(cards)
   SUITS.each do |suit|
     RANK.each do |rank|
-      card = {}
-      card[:suit] = suit
-      card[:rank] = rank
-      card[:high_value] = rank.to_i
-      card[:low_value] = rank.to_i
-      cards.push(card)
-      face_card_handler(card)
+      card_hash = {}
+      card_hash[:suit] = suit
+      card_hash[:rank] = rank
+      card_hash[:high_value] = rank.to_i
+      card_hash[:low_value] = rank.to_i
+      cards.push(card_hash)
+      face_card_handler(card_hash)
     end
   end
 end
@@ -75,21 +78,35 @@ def deal_card(deck_of_cards, hand_of_cards)
 end
 
 def display_initial_hands(player, dealer)
-  prompt "You have a #{player[0][:rank]} of #{player[0][:suit]} and " \
+  prompt "#{PLAYER} has a #{player[0][:rank]} of #{player[0][:suit]} and " \
          "#{player[1][:rank]} of #{player[1][:suit]}."
-  prompt "Dealer has #{dealer[0][:rank]} of #{dealer[0][:suit]} and " \
+  prompt "#{DEALER} has #{dealer[0][:rank]} of #{dealer[0][:suit]} and " \
          "an unknown card."
 end
 
-def display_players_hand(player)
-  prompt "You have: "
+def display_hand(player)
   player.each do |key, value|
-    prompt "#{key[:rank]} of #{key[:suit]}"
+    prompt "  #{key[:rank]} of #{key[:suit]}"
   end
 end
 
 def busted?(score)
   score > GAME_MAX
+end
+
+def take_turn(deck_of_cards, hand_of_cards)
+  deal_card(deck_of_cards, hand_of_cards)
+  prompt "The hand is now:"
+  display_hand(hand_of_cards)
+end
+
+def detect_winner(player, dealer)
+  if total(player) > GAME_MAX
+    return DEALER
+    binding.pry
+  elsif total(dealer) > GAME_MAX
+    return PLAYER
+  end
 end
 
 deck = []
@@ -107,16 +124,43 @@ display_initial_hands(players_hand, dealers_hand)
 
 answer = nil
 loop do
-  prompt "Do you want to hit or stay?"
+  prompt "Do you want to hit (h) or stay (s)?"
   answer = gets.chomp
-  break if %w(s stay).include?(answer)
-  deal_card(deck, players_hand)
-  display_players_hand(players_hand)
+  break if answer.downcase.start_with?('s')
+  take_turn(deck, players_hand)
   break if busted?(total(players_hand))
 end
 
 if busted?(total(players_hand))
-  prompt "You busted - your total is #{total(players_hand)}."
+  prompt "Sorry. You busted. Your total is #{total(players_hand)}."
+  prompt "Dealer wins!"
+  # add prompt to restart game
+else
+  prompt "You decided to stay!"
+  prompt "It is now Dealer's turn."
+  prompt "Dealer's cards are:"
+  display_hand(dealers_hand)
+end
+
+loop do
+  break if total(dealers_hand) >= HIT_OR_STAY_BREAK || busted?(total(dealers_hand))
+  prompt "Dealer decides to hit."
+  take_turn(deck, dealers_hand)
+end
+
+if busted?(total(dealers_hand))
+  prompt "Dealer busted.  Dealer's total is #{total(dealers_hand)}."
+  prompt "You win!"
+  # Add prompt to restart game
+end
+
+if total(dealers_hand) >= HIT_OR_STAY_BREAK
+  prompt "Dealer decided to stay."
+  prompt "Time to decide a winner!"
+  prompt "Player has #{total(players_hand)}."
+  prompt "Dealer has #{total(dealers_hand)}."
+  detect_winner(players_hand, dealers_hand)
+  prompt "The winner is: #{detect_winner(players_hand, dealers_hand)}!"
 end
 
 
