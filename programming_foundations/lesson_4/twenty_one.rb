@@ -128,26 +128,27 @@ def someone_won?(player, dealer)
   !!detect_result(player, dealer)
 end
 
-def five_wins?(score)
-  score[:player] == ROUNDS_TO_WIN || score[:dealer] == ROUNDS_TO_WIN
+def five_wins?(score1)
+  score1[:player] == ROUNDS_TO_WIN || score1[:dealer] == ROUNDS_TO_WIN
 end
 
-def display_five_round_winner(score)
-  if score[:player] == ROUNDS_TO_WIN
-    prompt "You won #{score[:player]} rounds. Dealer won #{score[:dealer]}" \
+def display_five_round_winner(score1)
+  if score1[:player] == ROUNDS_TO_WIN
+    prompt "You won #{score1[:player]} rounds. Dealer won #{score1[:dealer]} " \
            "rounds.  You win! Congratulations!"
-  elsif score[:dealer] == ROUNDS_TO_WIN
-    prompt "Dealer won #{score[:dealer]} rounds. You won #{score[player]}" \
+  else #score1[:dealer] == ROUNDS_TO_WIN
+    prompt "Dealer won #{score1[:dealer]} rounds. You won #{score1[:player]} " \
            "rounds.  Sorry! Dealer wins."
   end
 end
 
-# def play_again?
-#   puts "-------------------"
-#   prompt "Do you want to play again? (y or n)"
-#   answer = gets.chomp
-#   answer.downcase.start_with?('y')
-# end
+def play_again?
+  puts "-------------------"
+  prompt "Do you want to play again? (y or n)"
+  answer = gets.chomp
+  answer = answer.downcase
+  %w(yes y).include?(answer)
+end
 
 def track_score(winner, score1)
   if winner == :player || winner == :dealer_busted
@@ -200,6 +201,7 @@ loop do
       players_hand_result = detect_result(players_hand, dealers_hand)
       track_score(players_hand_result, score)
       display_score(score)
+
     else
       prompt "You decided to stay at #{players_total}!"
       prompt "It is now #{DEALER}'s turn."
@@ -219,22 +221,24 @@ loop do
         dealers_hand_result = detect_result(players_hand, dealers_hand)
         track_score(dealers_hand_result, score)
         display_score(score)
-      elsif total(dealers_hand) >= HIT_STAY_BREAK
+
+      else total(dealers_hand) >= HIT_STAY_BREAK
         prompt "#{DEALER} stays at #{dealers_total}!"
         prompt "Time to decide a winner!"
         prompt "#{DEALER} has #{dealers_total}."
         prompt "You have #{total(players_hand)}."
+
         display_result(players_hand, dealers_hand)
 
         final_result = detect_result(players_hand, dealers_hand)
         track_score(final_result, score)
         display_score(score)
-      end
 
-      break if five_wins?(score)
-      binding.pry
-      puts "HELP!!!!!!!!!!!!!!!!!!!"
-      display_five_round_winner(score)
+        next unless five_wins?(score)
+        display_five_round_winner(score)
+        break if play_again?
+        score = { player: 0, dealer: 0 }
+      end
     end
   end
 end
