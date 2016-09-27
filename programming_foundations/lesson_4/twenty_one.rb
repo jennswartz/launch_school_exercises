@@ -2,10 +2,6 @@ require 'pry'
 
 SUITS = %w(Clubs Diamonds Hearts Spades).freeze
 RANK = %w(2 3 4 5 6 7 8 9 10 Jack Queen King Ace).freeze
-ACE = 'Ace'.freeze
-JACK = 'Jack'.freeze
-QUEEN = 'Queen'.freeze
-KING = 'King'.freeze
 PLAYER = 'Player'.freeze
 DEALER = 'Dealer'.freeze
 FACE_CARD_VALUE = 10
@@ -39,16 +35,10 @@ end
 
 def face_card_handler(cards)
   case cards[:rank]
-  when JACK
+  when 'Jack', 'Queen', 'King'
     cards[:high_value] = FACE_CARD_VALUE
     cards[:low_value] = FACE_CARD_VALUE
-  when QUEEN
-    cards[:high_value] = FACE_CARD_VALUE
-    cards[:low_value] = FACE_CARD_VALUE
-  when KING
-    cards[:high_value] = FACE_CARD_VALUE
-    cards[:low_value] = FACE_CARD_VALUE
-  when ACE
+  when 'Ace'
     cards[:high_value] = ACE_HIGH
     cards[:low_value] = ACE_LOW
   end
