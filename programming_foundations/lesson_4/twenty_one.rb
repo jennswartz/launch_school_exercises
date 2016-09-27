@@ -80,7 +80,7 @@ def display_initial_hands(player, dealer)
 end
 
 def display_hand(player)
-  prompt "The hand is now:"
+  prompt "The cards are now:"
   player.each do |key, _|
     prompt "  #{key[:rank]} of #{key[:suit]}"
   end
@@ -139,7 +139,7 @@ def display_five_round_winner(number_of_wins)
            "You won #{number_of_wins[:player]} rounds. " \
            "Sorry! Dealer wins."
   else
-    "Something went wrong!"
+    "Something went wrong! Score cannot be tabulated!"
   end
 end
 
@@ -195,15 +195,21 @@ loop do
     prompt "Do you want to hit (h) or stay (s)?"
     answer = gets.chomp
     clear_screen
-    break if answer.downcase.start_with?('s')
-    take_turn(deck, players_hand)
-    break if busted?(players_hand)
+    if answer.downcase.start_with?('s')
+      break
+    elsif answer.downcase.start_with?('h')
+      take_turn(deck, players_hand)
+      break if busted?(players_hand)
+    else
+      prompt "Invalid command."
+      display_hand(players_hand)
+    end
   end
 
   players_total = total(players_hand)
   if busted?(players_hand)
-    display_result(players_hand, dealers_hand)
     prompt "Your total is #{players_total}."
+    display_result(players_hand, dealers_hand)
 
   else
     prompt "You decided to stay at #{players_total}!"
@@ -218,14 +224,14 @@ loop do
 
     dealers_total = total(dealers_hand)
     if busted?(dealers_hand)
-      display_result(players_hand, dealers_hand)
       prompt "#{DEALER}'s total is #{dealers_total}."
+      display_result(players_hand, dealers_hand)
 
     elsif total(dealers_hand) >= HIT_STAY_BREAK
       prompt "#{DEALER} stays at #{dealers_total}!"
       prompt "Time to decide a winner!"
-      prompt "#{DEALER} has #{dealers_total}."
       prompt "You have #{total(players_hand)}."
+      prompt "#{DEALER} has #{dealers_total}."
       display_result(players_hand, dealers_hand)
     end
   end
