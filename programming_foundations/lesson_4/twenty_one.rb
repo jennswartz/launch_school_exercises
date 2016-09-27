@@ -80,6 +80,7 @@ def display_initial_hands(player, dealer)
 end
 
 def display_hand(player)
+  prompt "The hand is now:"
   player.each do |key, _|
     prompt "  #{key[:rank]} of #{key[:suit]}"
   end
@@ -91,7 +92,6 @@ end
 
 def take_turn(deck_of_cards, hand_of_cards)
   deal_card(deck_of_cards, hand_of_cards)
-  prompt "The hand is now:"
   display_hand(hand_of_cards)
 end
 
@@ -124,43 +124,44 @@ def display_result(player, dealer)
   end
 end
 
-def someone_won?(player, dealer)
-  !!detect_result(player, dealer)
+def five_wins?(score_1)
+  score_1[:player] == ROUNDS_TO_WIN || score_1[:dealer] == ROUNDS_TO_WIN
 end
 
-def five_wins?(score1)
-  score1[:player] == ROUNDS_TO_WIN || score1[:dealer] == ROUNDS_TO_WIN
-end
-
-def display_five_round_winner(score1)
-  if score1[:player] == ROUNDS_TO_WIN
-    prompt "You won #{score1[:player]} rounds. Dealer won #{score1[:dealer]} " \
+def display_five_round_winner(score_1)
+  if score_1[:player] == ROUNDS_TO_WIN
+    prompt "You won #{score_1[:player]} rounds. Dealer won #{score_1[:dealer]} " \
            "rounds.  You win! Congratulations!"
-  else #score1[:dealer] == ROUNDS_TO_WIN
-    prompt "Dealer won #{score1[:dealer]} rounds. You won #{score1[:player]} " \
+  elsif score_1[:dealer] == ROUNDS_TO_WIN
+    prompt "Dealer won #{score_1[:dealer]} rounds. You won #{score_1[:player]} " \
            "rounds.  Sorry! Dealer wins."
   end
 end
 
 def play_again?
-  puts "-------------------"
-  prompt "Do you want to play again? (y or n)"
-  answer = gets.chomp
-  answer = answer.downcase
-  %w(yes y).include?(answer)
+  answer = nil
+  loop do
+    puts "-------------------"
+    prompt "Do you want to play again? (y or n)"
+    answer = gets.chomp
+    answer = answer.downcase
+    break if %w(yes y n no).include?(answer)
+    prompt "Invalid answer. Please answer yes or no (y or n)."
+  end
+  answer
 end
 
-def track_score(winner, score1)
+def track_score(winner, score_1)
   if winner == :player || winner == :dealer_busted
-    score1[:player] += 1
+    score_1[:player] += 1
   elsif winner == :dealer || winner == :player_busted
-    score1[:dealer] += 1
+    score_1[:dealer] += 1
   end
 end
 
-def display_score(score1)
-  prompt "You have #{score1[:player]} wins. Dealer has " \
-          "#{score1[:dealer]} wins."
+def display_score(score_1)
+  prompt "You have #{score_1[:player]} wins. Dealer has " \
+          "#{score_1[:dealer]} wins."
   prompt "========================================="
   prompt "========================================="
 end
@@ -169,78 +170,68 @@ score = { player: 0, dealer: 0 }
 prompt "Welcome to the Twenty One!"
 
 loop do
+  deck = []
+  players_hand = []
+  dealers_hand = []
+
+  initialize_full_deck(deck)
+
+  2.times do
+    deal_card(deck, players_hand)
+    deal_card(deck, dealers_hand)
+  end
+
+  display_initial_hands(players_hand, dealers_hand)
+
+  answer = nil
   loop do
-    deck = []
-    players_hand = []
-    dealers_hand = []
+    prompt "(You have #{total(players_hand)})."
+    prompt "Do you want to hit (h) or stay (s)?"
+    answer = gets.chomp
+    break if answer.downcase.start_with?('s')
+    clear_screen
+    take_turn(deck, players_hand)
+    break if busted?(players_hand)
+  end
 
-    initialize_full_deck(deck)
+  players_total = total(players_hand)
+  if busted?(players_hand)
+    display_result(players_hand, dealers_hand)
+    prompt "Your total is #{players_total}."
 
-    2.times do
-      deal_card(deck, players_hand)
-      deal_card(deck, dealers_hand)
-    end
+  else
+    prompt "You decided to stay at #{players_total}!"
+    prompt "It is now #{DEALER}'s turn."
+    display_hand(dealers_hand)
 
-    display_initial_hands(players_hand, dealers_hand)
-
-    answer = nil
     loop do
-      prompt "(You have #{total(players_hand)})."
-      prompt "Do you want to hit (h) or stay (s)?"
-      answer = gets.chomp
-      break if answer.downcase.start_with?('s')
-      clear_screen
-      take_turn(deck, players_hand)
-      break if busted?(players_hand)
+      break if total(dealers_hand) >= HIT_STAY_BREAK || busted?(dealers_hand)
+      prompt "#{DEALER} hits!"
+      take_turn(deck, dealers_hand)
     end
 
-    players_total = total(players_hand)
-    if busted?(players_hand)
+    dealers_total = total(dealers_hand)
+    if busted?(dealers_hand)
       display_result(players_hand, dealers_hand)
-      prompt "Your total is #{players_total}."
-      players_hand_result = detect_result(players_hand, dealers_hand)
-      track_score(players_hand_result, score)
-      display_score(score)
+      prompt "#{DEALER}'s total is #{dealers_total}."
 
-    else
-      prompt "You decided to stay at #{players_total}!"
-      prompt "It is now #{DEALER}'s turn."
-      prompt "#{DEALER}'s cards are:"
-      display_hand(dealers_hand)
-
-      loop do
-        break if total(dealers_hand) >= HIT_STAY_BREAK || busted?(dealers_hand)
-        prompt "#{DEALER} hits!"
-        take_turn(deck, dealers_hand)
-      end
-
-      dealers_total = total(dealers_hand)
-      if busted?(dealers_hand)
-        display_result(players_hand, dealers_hand)
-        prompt "#{DEALER}'s total is #{dealers_total}."
-        dealers_hand_result = detect_result(players_hand, dealers_hand)
-        track_score(dealers_hand_result, score)
-        display_score(score)
-
-      else total(dealers_hand) >= HIT_STAY_BREAK
-        prompt "#{DEALER} stays at #{dealers_total}!"
-        prompt "Time to decide a winner!"
-        prompt "#{DEALER} has #{dealers_total}."
-        prompt "You have #{total(players_hand)}."
-
-        display_result(players_hand, dealers_hand)
-
-        final_result = detect_result(players_hand, dealers_hand)
-        track_score(final_result, score)
-        display_score(score)
-
-        next unless five_wins?(score)
-        display_five_round_winner(score)
-        break if play_again?
-        score = { player: 0, dealer: 0 }
-      end
+    elsif total(dealers_hand) >= HIT_STAY_BREAK
+      prompt "#{DEALER} stays at #{dealers_total}!"
+      prompt "Time to decide a winner!"
+      prompt "#{DEALER} has #{dealers_total}."
+      prompt "You have #{total(players_hand)}."
+      display_result(players_hand, dealers_hand)
     end
   end
+
+  game_result = detect_result(players_hand, dealers_hand)
+  track_score(game_result, score)
+  display_score(score)
+
+  next unless five_wins?(score)
+  display_five_round_winner(score)
+  score = { player: 0, dealer: 0 }
+  break if play_again?.start_with?('n')
 end
 
 prompt "Thank you for playing Twenty-One! Good-bye."
