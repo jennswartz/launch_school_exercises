@@ -86,8 +86,8 @@ def display_hand(player)
   end
 end
 
-def busted?(score)
-  total(score) > GAME_MAX
+def busted?(amount)
+  total(amount) > GAME_MAX
 end
 
 def take_turn(deck_of_cards, hand_of_cards)
@@ -124,17 +124,22 @@ def display_result(player, dealer)
   end
 end
 
-def five_wins?(score_1)
-  score_1[:player] == ROUNDS_TO_WIN || score_1[:dealer] == ROUNDS_TO_WIN
+def five_wins?(number_of_wins)
+  number_of_wins[:player] == ROUNDS_TO_WIN ||
+    number_of_wins[:dealer] == ROUNDS_TO_WIN
 end
 
-def display_five_round_winner(score_1)
-  if score_1[:player] == ROUNDS_TO_WIN
-    prompt "You won #{score_1[:player]} rounds. Dealer won #{score_1[:dealer]} " \
-           "rounds.  You win! Congratulations!"
-  elsif score_1[:dealer] == ROUNDS_TO_WIN
-    prompt "Dealer won #{score_1[:dealer]} rounds. You won #{score_1[:player]} " \
-           "rounds.  Sorry! Dealer wins."
+def display_five_round_winner(number_of_wins)
+  if number_of_wins[:player] == ROUNDS_TO_WIN
+    prompt "You won #{number_of_wins[:player]} rounds. " \
+           "Dealer won #{number_of_wins[:dealer]} rounds. " \
+           "You win! Congratulations!"
+  elsif number_of_wins[:dealer] == ROUNDS_TO_WIN
+    prompt "Dealer won #{number_of_wins[:dealer]} rounds. " \
+           "You won #{number_of_wins[:player]} rounds. " \
+           "Sorry! Dealer wins."
+  else
+    "Something went wrong!"
   end
 end
 
@@ -151,22 +156,23 @@ def play_again?
   answer
 end
 
-def track_score(winner, score_1)
+def track_score(winner, number_of_wins)
   if winner == :player || winner == :dealer_busted
-    score_1[:player] += 1
+    number_of_wins[:player] += 1
   elsif winner == :dealer || winner == :player_busted
-    score_1[:dealer] += 1
+    number_of_wins[:dealer] += 1
   end
 end
 
-def display_score(score_1)
-  prompt "You have #{score_1[:player]} wins. Dealer has " \
-          "#{score_1[:dealer]} wins."
+def display_score(number_of_wins)
+  prompt "You have #{number_of_wins[:player]} wins. Dealer has " \
+          "#{number_of_wins[:dealer]} wins."
   prompt "========================================="
   prompt "========================================="
 end
 
 score = { player: 0, dealer: 0 }
+clear_screen
 prompt "Welcome to the Twenty One!"
 
 loop do
@@ -185,11 +191,11 @@ loop do
 
   answer = nil
   loop do
-    prompt "(You have #{total(players_hand)})."
+    prompt "(You have #{total(players_hand)}.)"
     prompt "Do you want to hit (h) or stay (s)?"
     answer = gets.chomp
-    break if answer.downcase.start_with?('s')
     clear_screen
+    break if answer.downcase.start_with?('s')
     take_turn(deck, players_hand)
     break if busted?(players_hand)
   end
